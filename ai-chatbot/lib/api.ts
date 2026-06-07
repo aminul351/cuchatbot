@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
 async function getToken() {
   const { auth } = await import("./firebase");
