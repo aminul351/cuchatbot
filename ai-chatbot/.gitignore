@@ -36,6 +36,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# yarn lock conflicts with npm; keep only package-lock.json
+yarn.lock
+
+# backend has its own package.json for local dev; root package.json has all deps
+backend/package.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
