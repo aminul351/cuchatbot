@@ -9,7 +9,7 @@ import { auth } from '@/lib/firebase';
 import { useAuth } from './contexts/AuthContext';
 import ReactMarkdown from 'react-markdown';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 
 const SUGGESTED_QUESTIONS = [
   'Tell me about the e-payment system at CU',
