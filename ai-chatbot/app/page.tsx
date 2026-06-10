@@ -207,7 +207,7 @@ export default function Page() {
     <div className="flex h-screen" style={{ background: '#f5f3ee', fontFamily: "'Georgia', 'Times New Roman', serif" }}>
 
       {/* ── Sidebar ── */}
-      <div style={{
+      <div className={`sidebar-panel ${sidebarOpen ? 'open' : ''}`} style={{
         width: sidebarOpen ? 280 : 0,
         minWidth: sidebarOpen ? 280 : 0,
         background: '#0d2e1f',
@@ -246,8 +246,8 @@ export default function Page() {
       <div className="flex flex-col flex-1 min-w-0">
 
         {/* ── Header ── */}
-        <header style={{ background: 'linear-gradient(135deg, #1a4731 0%, #0d2e1f 100%)', borderBottom: '3px solid #c9a84c' }} className="px-6 py-4">
-          <div className="max-w-4xl mx-auto flex items-center gap-4">
+        <header style={{ background: 'linear-gradient(135deg, #1a4731 0%, #0d2e1f 100%)', borderBottom: '3px solid #c9a84c' }} className="px-4 sm:px-6 py-3 sm:py-4">
+          <div className="max-w-4xl mx-auto flex items-center gap-3 sm:gap-4 header-content">
 
             {/* Sidebar toggle */}
             <button onClick={() => setSidebarOpen(true)}
@@ -256,7 +256,7 @@ export default function Page() {
             </button>
 
             {/* Logo */}
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '2px solid #c9a84c', overflow: 'hidden' }}>
+            <div className="chat-logo" style={{ width: 52, height: 52, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '2px solid #c9a84c', overflow: 'hidden' }}>
               <img
                 src="https://cu.ac.bd/wp-content/uploads/2021/12/logo1.png"
                 alt="CU Logo"
@@ -266,7 +266,7 @@ export default function Page() {
             </div>
 
             {/* Title */}
-            <div>
+            <div className="header-title">
               <h1 style={{ color: '#c9a84c', fontSize: '1.25rem', fontWeight: 700, letterSpacing: '0.02em', lineHeight: 1.2 }}>
                 চট্টগ্রাম বিশ্ববিদ্যালয়
               </h1>
@@ -276,26 +276,28 @@ export default function Page() {
             </div>
 
             {/* Right side */}
-            <div className="ml-auto flex items-center gap-3">
-              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: isProcessing ? '#f59e0b' : '#4ade80', boxShadow: isProcessing ? '0 0 8px #f59e0b' : '0 0 8px #4ade80' }} />
-              <span style={{ color: '#a8c5b0', fontSize: '0.75rem', fontFamily: 'sans-serif' }}>
+            <div className="ml-auto flex items-center gap-2 sm:gap-3 header-right">
+              <span className="status-label" style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: isProcessing ? '#f59e0b' : '#4ade80', boxShadow: isProcessing ? '0 0 8px #f59e0b' : '0 0 8px #4ade80' }} />
+              <span className="status-label" style={{ color: '#a8c5b0', fontSize: '0.75rem', fontFamily: 'sans-serif' }}>
                 {isProcessing ? 'Searching...' : 'Live'}
               </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt="" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #c9a84c' }} />
+                  <img src={user.photoURL} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #c9a84c', flexShrink: 0 }} />
                 ) : (
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#1a4731', border: '1.5px solid #c9a84c88', flexShrink: 0 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#1a4731', border: '1.5px solid #c9a84c88', flexShrink: 0 }}>
                     {displayName[0].toUpperCase()}
                   </div>
                 )}
                 <button onClick={() => router.push('/dashboard')}
+                  className="user-name-btn"
                   style={{ padding: '4px 10px', background: 'rgba(201,168,76,0.15)', border: '1px solid #c9a84c55', borderRadius: 7, color: '#c9a84c', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'sans-serif', fontWeight: 600 }}>
                   {displayName}
                 </button>
               </div>
               <button onClick={async () => { await signOut(); router.replace('/login'); }}
-                style={{ padding: '5px 12px', background: 'rgba(255,255,255,0.07)', border: '1px solid #ffffff22', borderRadius: 7, color: '#f5f3ee', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'sans-serif' }}>
+                className="signout-btn"
+                style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid #ffffff22', borderRadius: 7, color: '#f5f3ee', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'sans-serif' }}>
                 Sign Out
               </button>
             </div>
@@ -303,8 +305,8 @@ export default function Page() {
         </header>
 
       {/* ── Messages ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 messages-area">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-5">
 
           {/* Empty state */}
           {messages.length === 0 && (
@@ -318,7 +320,7 @@ export default function Page() {
               <p style={{ color: '#5a7a68', fontSize: '0.95rem', marginBottom: 24, fontFamily: 'sans-serif', maxWidth: 420, margin: '0 auto 24px' }}>
                 Ask me anything about the University of Chittagong — admissions, notices, departments, results, and more.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, maxWidth: 560, margin: '0 auto' }}>
+              <div className="suggestions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, maxWidth: 560, margin: '0 auto' }}>
                 {SUGGESTED_QUESTIONS.map((q) => (
                   <button
                     key={q}
@@ -346,7 +348,7 @@ export default function Page() {
               )}
 
               {/* Bubble */}
-              <div style={{
+              <div className="message-bubble" style={{
                 maxWidth: '75%',
                 borderRadius: message.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                 padding: '12px 16px',
@@ -445,7 +447,7 @@ export default function Page() {
       )}
 
       {/* ── Input Area ── */}
-      <div style={{ background: '#fff', borderTop: '2px solid #c9a84c33', padding: '14px 16px' }}>
+      <div style={{ background: '#fff', borderTop: '2px solid #c9a84c33', padding: '10px 12px' }} className="input-area sm:px-4 sm:py-3.5">
         <div className="max-w-4xl mx-auto">
 
           {/* File previews */}
@@ -467,38 +469,39 @@ export default function Page() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+          <div className="input-area-inner" style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <input type="file" onChange={(e) => e.target.files && setFiles(e.target.files)} className="hidden" id="file-upload" multiple accept="image/*,.txt,.pdf" ref={fileInputRef} />
-            <label htmlFor="file-upload" style={{ padding: '10px 12px', background: '#f0ede8', border: '1px solid #c9a84c44', borderRadius: 10, cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>📎</label>
+            <label htmlFor="file-upload" className="attach-btn" style={{ padding: '8px 10px', background: '#f0ede8', border: '1px solid #c9a84c44', borderRadius: 10, cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>📎</label>
 
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about admissions, notices, departments... (Shift+Enter for new line)"
-              style={{ flex: 1, padding: '10px 14px', border: '1.5px solid #c9a84c66', borderRadius: 12, outline: 'none', resize: 'none', fontFamily: 'sans-serif', fontSize: '0.9rem', lineHeight: 1.5, background: '#fafaf8', color: '#1a1a1a', transition: 'border-color 0.15s', minHeight: 44 }}
+              placeholder="Ask anything about CU..."
+              style={{ flex: 1, padding: '8px 10px', border: '1.5px solid #c9a84c66', borderRadius: 12, outline: 'none', resize: 'none', fontFamily: 'sans-serif', fontSize: '0.9rem', lineHeight: 1.5, background: '#fafaf8', color: '#1a1a1a', transition: 'border-color 0.15s', minHeight: 44 }}
               rows={1}
               disabled={!isReady}
               onFocus={(e) => (e.currentTarget.style.borderColor = '#1a4731')}
               onBlur={(e) => (e.currentTarget.style.borderColor = '#c9a84c66')}
             />
 
-            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
               {isProcessing && (
-                <button type="button" onClick={stop} style={{ padding: '10px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'sans-serif', fontSize: '0.85rem', fontWeight: 600 }}>Stop</button>
+                <button type="button" onClick={stop} style={{ padding: '8px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'sans-serif', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}>Stop</button>
               )}
               <button
                 onClick={handleSubmit}
                 disabled={(!input.trim() && (!files || files.length === 0)) || !isReady}
-                style={{ padding: '10px 22px', background: ((!input.trim() && (!files || files.length === 0)) || !isReady) ? '#9ca3af' : 'linear-gradient(135deg, #1a4731 0%, #0d2e1f 100%)', color: '#fff', border: '1px solid #c9a84c44', borderRadius: 10, cursor: (!input.trim() || !isReady) ? 'not-allowed' : 'pointer', fontFamily: 'sans-serif', fontSize: '0.9rem', fontWeight: 700 }}
+                className="send-btn"
+                style={{ padding: '8px 16px', background: ((!input.trim() && (!files || files.length === 0)) || !isReady) ? '#9ca3af' : 'linear-gradient(135deg, #1a4731 0%, #0d2e1f 100%)', color: '#fff', border: '1px solid #c9a84c44', borderRadius: 10, cursor: (!input.trim() || !isReady) ? 'not-allowed' : 'pointer', fontFamily: 'sans-serif', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0 }}
               >
                 Send →
               </button>
             </div>
           </div>
 
-          <div style={{ marginTop: 8, textAlign: 'center', fontSize: '0.72rem', color: '#5a7a68', fontFamily: 'sans-serif' }}>
+          <div className="hidden-mobile sm:block" style={{ marginTop: 8, textAlign: 'center', fontSize: '0.72rem', color: '#5a7a68', fontFamily: 'sans-serif' }}>
             {status === 'submitted' && '⏳ Sending...'}
             {status === 'streaming' && '🔍 Searching cu.ac.bd for live information...'}
             {status === 'ready' && '✅ Ready · Searches cu.ac.bd live'}

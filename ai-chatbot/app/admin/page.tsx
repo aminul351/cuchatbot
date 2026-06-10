@@ -131,26 +131,26 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f3ee', fontFamily: 'sans-serif' }}>
-      <header style={{ background: 'linear-gradient(135deg,#1a4731,#0d2e1f)', borderBottom: '3px solid #c9a84c', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #c9a84c', overflow: 'hidden', flexShrink: 0 }}>
-          <img src="https://cu.ac.bd/wp-content/uploads/2021/12/logo1.png" alt="CU" style={{ width: 34, height: 34, objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+      <header className="admin-header" style={{ background: 'linear-gradient(135deg,#1a4731,#0d2e1f)', borderBottom: '3px solid #c9a84c', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #c9a84c', overflow: 'hidden', flexShrink: 0 }}>
+          <img src="https://cu.ac.bd/wp-content/uploads/2021/12/logo1.png" alt="CU" style={{ width: 30, height: 30, objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         </div>
         <div>
-          <h1 style={{ color: '#c9a84c', fontSize: '1.05rem', fontWeight: 700, fontFamily: 'Georgia,serif' }}>Admin Dashboard</h1>
-          <p style={{ color: '#a8c5b0', fontSize: '0.72rem', letterSpacing: '0.05em' }}>University of Chittagong AI Assistant</p>
+          <h1 style={{ color: '#c9a84c', fontSize: '1rem', fontWeight: 700, fontFamily: 'Georgia,serif' }}>Admin Dashboard</h1>
+          <p style={{ color: '#a8c5b0', fontSize: '0.7rem', letterSpacing: '0.05em' }}>University of Chittagong AI Assistant</p>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ color: '#a8c5b0', fontSize: '0.8rem' }}>{user.displayName || user.email}</span>
+        <div className="admin-header-actions" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="admin-user-name" style={{ color: '#a8c5b0', fontSize: '0.75rem' }}>{user.displayName || user.email}</span>
           <button onClick={async () => { await signOut(); router.replace('/login'); }}
-            style={{ padding: '7px 14px', background: 'rgba(201,168,76,0.15)', border: '1px solid #c9a84c55', borderRadius: 8, color: '#c9a84c', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}>
+            style={{ padding: '6px 12px', background: 'rgba(201,168,76,0.15)', border: '1px solid #c9a84c55', borderRadius: 8, color: '#c9a84c', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>
             Sign Out
           </button>
         </div>
       </header>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 20px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 12px' }}>
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+        <div className="admin-nav" style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
           {(['users', 'chats', 'faculty'] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid #c9a84c44', background: tab === t ? '#1a4731' : '#fff', color: tab === t ? '#f5f3ee' : '#1a4731', fontSize: '0.83rem', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' as const }}>
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16, marginBottom: 28 }}>
+        <div className="admin-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12, marginBottom: 24 }}>
           {[
             { icon: '👥', value: users.length, label: 'Total Users', color: '#1a4731' },
             { icon: '🟢', value: activeToday, label: 'Active Today', color: '#059669' },
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
             <div style={{ padding: '18px 20px', borderBottom: '1px solid #e2ddd6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 12 }}>
               <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a4731' }}>Registered Users</h2>
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email..."
-                style={{ padding: '8px 14px', border: '1.5px solid #c9a84c66', borderRadius: 8, outline: 'none', fontSize: '0.85rem', width: 240, background: '#fafaf8', color: '#1a1a1a' }} />
+                className="search-input" style={{ padding: '8px 14px', border: '1.5px solid #c9a84c66', borderRadius: 8, outline: 'none', fontSize: '0.85rem', width: 240, background: '#fafaf8', color: '#1a1a1a', maxWidth: '100%' }} />
             </div>
             {fetching ? (
               <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading users...</div>

@@ -75,21 +75,21 @@ export default function Dashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f3ee', fontFamily: 'sans-serif' }}>
-      <header style={{ background: 'linear-gradient(135deg,#1a4731,#0d2e1f)', borderBottom: '3px solid #c9a84c', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+      <header className="dash-header" style={{ background: 'linear-gradient(135deg,#1a4731,#0d2e1f)', borderBottom: '3px solid #c9a84c', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
         <Logo />
         <div>
-          <h1 style={{ color: '#c9a84c', fontSize: '1.05rem', fontWeight: 700, fontFamily: 'Georgia,serif' }}>My Dashboard</h1>
-          <p style={{ color: '#a8c5b0', fontSize: '0.72rem', letterSpacing: '0.05em' }}>University of Chittagong AI Assistant</p>
+          <h1 style={{ color: '#c9a84c', fontSize: '1rem', fontWeight: 700, fontFamily: 'Georgia,serif' }}>My Dashboard</h1>
+          <p style={{ color: '#a8c5b0', fontSize: '0.7rem', letterSpacing: '0.05em' }}>University of Chittagong AI Assistant</p>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
+        <div className="dash-header-actions" style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <Btn onClick={() => router.push('/')} gold>Open Chat</Btn>
           <Btn onClick={async () => { await signOut(); router.replace('/login'); }}>Sign Out</Btn>
         </div>
       </header>
 
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 20px' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '24px 16px' }}>
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+        <div className="dash-nav" style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
           {(['profile', 'history'] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid #c9a84c44', background: tab === t ? '#1a4731' : '#fff', color: tab === t ? '#f5f3ee' : '#1a4731', fontSize: '0.83rem', fontWeight: 600, cursor: 'pointer' }}>
@@ -111,7 +111,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 16, marginBottom: 24 }}>
+            <div className="dash-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, marginBottom: 24 }}>
               {[
                 { icon: '💬', value: profile?.messageCount ?? 0, label: 'Messages Sent' },
                 { icon: '📅', value: profile?.createdAt ? fmt(new Date(profile.createdAt)) : '—', label: 'Member Since' },

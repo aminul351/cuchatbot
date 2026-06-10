@@ -8,7 +8,7 @@ import { auth, signInWithEmail, signUpWithEmail, signInWithGoogle, isAdmin } fro
 // ── Toast ────────────────────────────────────────────────────────────────────
 function Toast({ message, type }: { message: string; type: 'success' | 'error' }) {
   return (
-    <div style={{
+    <div className="toast-notification" style={{
       position: 'fixed', top: 24, right: 24, zIndex: 9999,
       background: type === 'success' ? '#1a4731' : '#dc2626',
       color: '#f5f3ee', padding: '12px 20px', borderRadius: 12,
@@ -135,7 +135,7 @@ export default function LoginPage() {
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div style={{ position: 'fixed', inset: 0, opacity: 0.04, backgroundImage: 'radial-gradient(circle,#c9a84c 1px,transparent 1px)', backgroundSize: '32px 32px', pointerEvents: 'none' }} />
 
-      <div style={{ width: '100%', maxWidth: 420, background: 'rgba(255,255,255,0.97)', borderRadius: 20, boxShadow: '0 24px 80px rgba(0,0,0,0.4),0 0 0 1px rgba(201,168,76,0.3)', overflow: 'hidden' }}>
+      <div className="login-card" style={{ width: '100%', maxWidth: 420, background: 'rgba(255,255,255,0.97)', borderRadius: 20, boxShadow: '0 24px 80px rgba(0,0,0,0.4),0 0 0 1px rgba(201,168,76,0.3)', overflow: 'hidden' }}>
 
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg,#1a4731,#0d2e1f)', padding: '28px 32px 24px', textAlign: 'center', borderBottom: '3px solid #c9a84c' }}>
@@ -147,7 +147,7 @@ export default function LoginPage() {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '28px 32px 32px' }}>
+        <div className="login-body" style={{ padding: '28px 32px 32px' }}>
 
           {/* Toggle */}
           <div style={{ display: 'flex', background: '#f0ede8', borderRadius: 10, padding: 4, marginBottom: 24 }}>
