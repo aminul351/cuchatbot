@@ -15,7 +15,7 @@ const app = express();
 
 const ALLOWED_ORIGINS = [
   process.env.CLIENT_URL || "http://localhost:3000",
-  "http://localhost:3000", "http://localhost:3001", "http://localhost:3002",
+  "http://localhost:3000", "http://localhost:3001", "http://localhost:3002","https://cuchatbot.vercel.app", 
 ];
 
 app.use((req, res, next) => {
