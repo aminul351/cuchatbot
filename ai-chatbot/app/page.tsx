@@ -18,8 +18,6 @@ const SUGGESTED_QUESTIONS = [
   'Tell me about the e-payment system at CU',
   'Who is the Vice-Chancellor of the University of Chittagong?',
   'How many faculties does the University of Chittagong have?',
-  'What is the total number of students at CU?',
-  'What is the history behind the University of Chittagong?',
   'Can you list all the faculties and departments at CU?',
   'চট্টগ্রাম বিশ্ববিদ্যালয়ের ইতিহাস কী??',
   'শাটল ট্রেনের সময়সূচি কী?',
@@ -321,7 +319,7 @@ export default function Page() {
                 Welcome, {displayName}!
               </h2>
               <p style={{ color: '#5a7a68', fontSize: '0.95rem', marginBottom: 24, fontFamily: 'sans-serif', maxWidth: 420, margin: '0 auto 24px' }}>
-                Ask me anything about the University of Chittagong — admissions, notices, departments, results, and more.
+                Ask me anything about the University of Chittagong...
               </p>
               <div className="suggestions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, maxWidth: 560, margin: '0 auto' }}>
                 {SUGGESTED_QUESTIONS.map((q) => (
