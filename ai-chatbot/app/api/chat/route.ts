@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const result = streamText({
     model: google('gemini-3.5-flash'),
     messages: await convertToModelMessages(messages),
-    system: `You are the official AI assistant for the University of Chittagong (চট্টগ্রাম বিশ্ববিদ্যালয়), cu.ac.bd.
+    system: `Current date: ${new Date().toDateString()}. You are the official AI assistant for the University of Chittagong (চট্টগ্রাম বিশ্ববিদ্যালয়), cu.ac.bd.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CRITICAL RULE — FACULTY DATA:

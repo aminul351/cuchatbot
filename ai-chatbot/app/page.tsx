@@ -8,6 +8,9 @@ import { DefaultChatTransport } from 'ai';
 import { auth } from '@/lib/firebase';
 import { useAuth } from './contexts/AuthContext';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
 
@@ -18,8 +21,8 @@ const SUGGESTED_QUESTIONS = [
   'What is the total number of students at CU?',
   'What is the history behind the University of Chittagong?',
   'Can you list all the faculties and departments at CU?',
-  'চট্টগ্রাম বিশ্ববিদ্যালয়ের প্রকল্প উপাচার্য কে?',
-  'চট্টগ্রাম বিশ্ববিদ্যালয় কত সালে প্রতিষ্ঠিত হয়?',
+  'চট্টগ্রাম বিশ্ববিদ্যালয়ের ইতিহাস কী??',
+  'শাটল ট্রেনের সময়সূচি কী?',
 ];
 
 interface ChatSummary {
@@ -367,15 +370,21 @@ export default function Page() {
                       <div key={index} style={{ fontSize: '0.93rem', lineHeight: 1.65, fontFamily: message.role === 'user' ? 'sans-serif' : "'Georgia', serif" }}>
                         {message.role === 'assistant' ? (
                           <ReactMarkdown
-                          // remarkPlugins={[remarkGfm]}
+                            remarkPlugins={[remarkGfm, remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
                             components={{
                               p: ({ children }) => <p style={{ margin: '0 0 8px 0' }}>{children}</p>,
                               strong: ({ children }) => <strong style={{ fontWeight: 700, color: 'inherit' }}>{children}</strong>,
                               ul: ({ children }) => <ul style={{ margin: '4px 0', paddingLeft: 20 }}>{children}</ul>,
                               ol: ({ children }) => <ol style={{ margin: '4px 0', paddingLeft: 20 }}>{children}</ol>,
                               li: ({ children }) => <li style={{ marginBottom: 4 }}>{children}</li>,
-                              
                               code: ({ children }) => <code style={{ background: '#f0ede8', padding: '2px 6px', borderRadius: 4, fontSize: '0.85em', fontFamily: 'monospace' }}>{children}</code>,
+                              table: ({ children }) => <div style={{ overflowX: 'auto', margin: '8px 0' }}><table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', fontFamily: 'sans-serif' }}>{children}</table></div>,
+                              thead: ({ children }) => <thead style={{ background: '#1a4731', color: '#f5f0e8' }}>{children}</thead>,
+                              tbody: ({ children }) => <tbody>{children}</tbody>,
+                              tr: ({ children }) => <tr style={{ borderBottom: '1px solid #d4c9a8' }}>{children}</tr>,
+                              th: ({ children }) => <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600 }}>{children}</th>,
+                              td: ({ children }) => <td style={{ padding: '8px 10px', verticalAlign: 'top' }}>{children}</td>,
                             }}
                           >
                             {part.text}
