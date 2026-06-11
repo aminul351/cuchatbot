@@ -14,6 +14,10 @@ export { SOCIAL_SCIENCES_FACULTY } from './social-sciences';
 export { EDUCATION_FACULTY } from './education';
 export { MARINE_SCIENCES_FACULTY } from './marine-sciences';
 export { UNIVERSITY_INFO } from './university-info';
+export { UPDATED_NEWS } from './updated_news';
+export {ADMISSION_INFO} from './admission';
+export {EEE_SYLLABUS} from './eee_syllabus';
+
 // To add a new department:
 // 1. Create app/api/chat/faculty/your_dept.ts
 // 2. Export YOUR_DEPT_FACULTY from it
