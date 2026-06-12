@@ -21,13 +21,6 @@ interface BackendChat {
   createdAt: string; updatedAt: string;
 }
 
-interface BackendFaculty {
-  _id: string; name: string; slug: string; type: string;
-  description: string; departments: string[];
-  teachers: { name: string; designation: string; email: string }[];
-  createdAt: string;
-}
-
 async function getToken() {
   return await auth.currentUser?.getIdToken();
 }
@@ -48,15 +41,12 @@ async function api(path: string, options?: RequestInit) {
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<'users' | 'chats' | 'faculty'>('users');
+  const [tab, setTab] = useState<'users' | 'chats' | 'overview'>('overview');
   const [users, setUsers] = useState<BackendUser[]>([]);
   const [chats, setChats] = useState<BackendChat[]>([]);
-  const [faculties, setFaculties] = useState<BackendFaculty[]>([]);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [editingFaculty, setEditingFaculty] = useState<string | null>(null);
-  const [editData, setEditData] = useState<Partial<BackendFaculty>>({});
 
   useEffect(() => {
     if (!loading) {
@@ -70,14 +60,12 @@ export default function AdminDashboard() {
       setFetching(true);
       try {
         setError('');
-        const [usersRes, chatsRes, facRes] = await Promise.all([
+        const [usersRes, chatsRes] = await Promise.all([
           api('/api/admin/users'),
           api('/api/admin/chats'),
-          api('/api/admin/faculty'),
         ]);
         if (usersRes.success) setUsers(usersRes.users);
         if (chatsRes.success) setChats(chatsRes.chats);
-        if (facRes.success) setFaculties(facRes.faculties);
       } catch (e: any) { setError(e.message); console.error(e); }
       finally { setFetching(false); }
     })();
@@ -88,17 +76,6 @@ export default function AdminDashboard() {
     await api(`/api/admin/user/${uid}`, { method: 'DELETE' });
     setUsers(users.filter((u) => u.uid !== uid));
     setChats(chats.filter((c) => c.userId !== uid));
-  }
-
-  async function saveFaculty(slug: string) {
-    await api(`/api/admin/faculty/${slug}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editData),
-    });
-    setEditingFaculty(null);
-    const facRes = await api('/api/admin/faculty');
-    if (facRes.success) setFaculties(facRes.faculties);
   }
 
   if (loading || !user) return <Loader />;
@@ -151,10 +128,10 @@ export default function AdminDashboard() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 12px' }}>
         {/* Tabs */}
         <div className="admin-nav" style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-          {(['users', 'chats', 'faculty'] as const).map((t) => (
+          {(['overview', 'users', 'chats'] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid #c9a84c44', background: tab === t ? '#1a4731' : '#fff', color: tab === t ? '#f5f3ee' : '#1a4731', fontSize: '0.83rem', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' as const }}>
-              {t} {t === 'users' ? `(${users.length})` : t === 'chats' ? `(${chats.length})` : `(${faculties.length})`}
+              {t === 'overview' ? '📊 Overview' : t} {t === 'users' ? `(${users.length})` : t === 'chats' ? `(${chats.length})` : ''}
             </button>
           ))}
         </div>
@@ -262,7 +239,7 @@ export default function AdminDashboard() {
                 <div key={c._id} style={{ padding: '12px 20px', borderBottom: i < Math.min(chats.length, 50) - 1 ? '1px solid #f0ede8' : 'none' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1a1a1a' }}>{c.title}</div>
                   <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 2 }}>
-                    User: {userEmailMap[c.userId] || c.userId.slice(0, 12)+'...'} | Faculty: {c.faculty || 'N/A'} | Messages: {c.messages?.length || 0} | Last: {c.updatedAt ? fmt(new Date(c.updatedAt)) : ''}
+                    User: {userEmailMap[c.userId] || c.userId.slice(0, 12)+'...'} | Messages: {c.messages?.length || 0} | Last: {c.updatedAt ? fmt(new Date(c.updatedAt)) : ''}
                   </div>
                 </div>
               ))
@@ -270,47 +247,119 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Faculty Tab */}
-        {tab === 'faculty' && (
-          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2ddd6', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-            <div style={{ padding: '18px 20px', borderBottom: '1px solid #e2ddd6' }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a4731' }}>Faculty Data ({faculties.length})</h2>
-            </div>
-            {fetching ? (
-              <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading faculty...</div>
-            ) : (
-              faculties.map((f, i) => (
-                <div key={f._id} style={{ padding: '16px 20px', borderBottom: i < faculties.length - 1 ? '1px solid #f0ede8' : 'none' }}>
-                  {editingFaculty === f.slug ? (
-                    <div>
-                      <input value={editData.description || ''} onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                        style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #c9a84c66', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }} placeholder="Description" />
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => saveFaculty(f.slug)} style={{ padding: '6px 14px', background: '#1a4731', color: '#fff', border: 'none', borderRadius: 6, fontSize: '0.8rem', cursor: 'pointer' }}>Save</button>
-                        <button onClick={() => setEditingFaculty(null)} style={{ padding: '6px 14px', background: '#6b7280', color: '#fff', border: 'none', borderRadius: 6, fontSize: '0.8rem', cursor: 'pointer' }}>Cancel</button>
+        {/* Overview Tab */}
+        {tab === 'overview' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Messages per User Chart */}
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2ddd6', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+              <div style={{ padding: '18px 20px', borderBottom: '1px solid #e2ddd6' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a4731' }}>Messages per User</h2>
+              </div>
+              {fetching ? (
+                <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading...</div>
+              ) : (
+                <div style={{ padding: '20px' }}>
+                  {(() => {
+                    const top = [...users].sort((a, b) => (b.messageCount || 0) - (a.messageCount || 0)).slice(0, 10);
+                    const max = Math.max(...top.map((u) => u.messageCount || 0), 1);
+                    return top.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: '#6b7280', fontSize: '0.85rem' }}>No message data yet.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {top.map((u) => (
+                          <div key={u.uid} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{ width: 160, fontSize: '0.78rem', color: '#374151', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>{u.displayName || u.email || 'Unknown'}</span>
+                            <div style={{ flex: 1, height: 26, background: '#f0ede8', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
+                              <div style={{ width: `${((u.messageCount || 0) / max) * 100}%`, minWidth: u.messageCount ? 4 : 0, height: '100%', background: 'linear-gradient(90deg,#1a4731,#2d6b4f)', borderRadius: 6, display: 'flex', alignItems: 'center', paddingLeft: 8, transition: 'width 0.4s' }}>
+                                <span style={{ color: '#fff', fontSize: '0.72rem', fontWeight: 600, whiteSpace: 'nowrap' }}>{u.messageCount || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a4731' }}>{f.name}</span>
-                          <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 10, background: '#f0ede8', color: '#6b7280' }}>{f.type}</span>
-                        </div>
-                        <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: 4 }}>
-                          {f.departments?.length || 0} departments · {f.teachers?.length || 0} teachers
-                        </div>
-                        {f.description && <div style={{ fontSize: '0.82rem', color: '#374151', marginTop: 6 }}>{f.description.slice(0, 200)}</div>}
-                      </div>
-                      <button onClick={() => { setEditingFaculty(f.slug); setEditData({ description: f.description }); }}
-                        style={{ padding: '6px 14px', background: '#1a4731', color: '#fff', border: 'none', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }}>
-                        Edit
-                      </button>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
-              ))
-            )}
+              )}
+            </div>
+
+            {/* Chats per Day Chart */}
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2ddd6', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+              <div style={{ padding: '18px 20px', borderBottom: '1px solid #e2ddd6' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a4731' }}>Chats Created (Last 14 Days)</h2>
+              </div>
+              {fetching ? (
+                <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading...</div>
+              ) : (
+                <div style={{ padding: '20px' }}>
+                  {(() => {
+                    const dayMap: Record<string, number> = {};
+                    const now = new Date();
+                    for (let i = 13; i >= 0; i--) {
+                      const d = new Date(now);
+                      d.setDate(d.getDate() - i);
+                      dayMap[d.toDateString()] = 0;
+                    }
+                    chats.forEach((c) => {
+                      const key = new Date(c.createdAt).toDateString();
+                      if (key in dayMap) dayMap[key]++;
+                    });
+                    const entries = Object.entries(dayMap);
+                    const maxVal = Math.max(...Object.values(dayMap), 1);
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140, padding: '0 4px' }}>
+                        {entries.map(([day, count]) => (
+                          <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 600, color: '#1a4731' }}>{count || ''}</span>
+                            <div style={{ width: '100%', height: `${(count / maxVal) * 100}%`, minHeight: count ? 4 : 0, background: 'linear-gradient(180deg,#c9a84c,#a68a3a)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s' }} />
+                            <span style={{ fontSize: '0.55rem', color: '#6b7280', writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)', marginTop: 2 }}>{day.slice(4, 10)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {/* Users Registered Chart */}
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2ddd6', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+              <div style={{ padding: '18px 20px', borderBottom: '1px solid #e2ddd6' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a4731' }}>Users Registered (Last 14 Days)</h2>
+              </div>
+              {fetching ? (
+                <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading...</div>
+              ) : (
+                <div style={{ padding: '20px' }}>
+                  {(() => {
+                    const dayMap: Record<string, number> = {};
+                    const now = new Date();
+                    for (let i = 13; i >= 0; i--) {
+                      const d = new Date(now);
+                      d.setDate(d.getDate() - i);
+                      dayMap[d.toDateString()] = 0;
+                    }
+                    users.forEach((u) => {
+                      const key = new Date(u.createdAt).toDateString();
+                      if (key in dayMap) dayMap[key]++;
+                    });
+                    const entries = Object.entries(dayMap);
+                    const maxVal = Math.max(...Object.values(dayMap), 1);
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140, padding: '0 4px' }}>
+                        {entries.map(([day, count]) => (
+                          <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 600, color: '#059669' }}>{count || ''}</span>
+                            <div style={{ width: '100%', height: `${(count / maxVal) * 100}%`, minHeight: count ? 4 : 0, background: 'linear-gradient(180deg,#059669,#047857)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s' }} />
+                            <span style={{ fontSize: '0.55rem', color: '#6b7280', writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)', marginTop: 2 }}>{day.slice(4, 10)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

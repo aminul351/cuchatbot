@@ -52,6 +52,71 @@ export default function Page() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatSummary[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
+  const [likedMessages, setLikedMessages] = useState<Set<string>>(new Set());
+  const [dislikedMessages, setDislikedMessages] = useState<Set<string>>(new Set());
+  const [copiedMessages, setCopiedMessages] = useState<Set<string>>(new Set());
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!lightboxUrl) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxUrl(null); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightboxUrl]);
+
+  const toggleLike = (id: string) => {
+    setLikedMessages((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+    setDislikedMessages((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleDislike = (id: string) => {
+    setDislikedMessages((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+    setLikedMessages((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const copyMessage = async (messageId: string) => {
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg) return;
+    const text = msg.parts?.filter((p) => p.type === 'text').map((p: any) => p.text).join('\n') || '';
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessages((prev) => new Set(prev).add(messageId));
+      setTimeout(() => setCopiedMessages((prev) => { const next = new Set(prev); next.delete(messageId); return next; }), 2000);
+    } catch { console.error('Copy failed'); }
+  };
+
+  const shareMessage = async (messageId: string) => {
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg) return;
+    const text = msg.parts?.filter((p) => p.type === 'text').map((p: any) => p.text).join('\n') || '';
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch { /* user cancelled */ }
+    } else {
+      await copyMessage(messageId);
+    }
+  };
+
+  const facultyColors: Record<string, string> = {
+    cse: '#059669', eee: '#dc2626', business: '#7c3aed', science: '#2563eb',
+    law: '#d97706', arts: '#0891b2', social: '#9333ea', education: '#65a30d',
+  };
 
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
@@ -65,7 +130,11 @@ export default function Page() {
     const userMsg = msgs.find((m) => m.role === 'user');
     const title = userMsg?.parts?.find((p) => p.type === 'text')?.text?.slice(0, 50) || 'New Chat';
     try {
-      const payload: any = { title, messages: msgs };
+      const messagesForBackend = msgs.map((m) => ({
+        role: m.role,
+        content: (m.parts?.find((p) => p.type === 'text') as { text: string } | undefined)?.text || '',
+      }));
+      const payload: any = { title, messages: messagesForBackend };
       if (currentChatIdRef.current) payload.chatId = currentChatIdRef.current;
       const data = await api('/api/chat/save', {
         method: 'POST',
@@ -135,15 +204,19 @@ export default function Page() {
     try {
       const data = await api(`/api/chat/${chatId}`);
       if (data.success && data.chat) {
-        setMessages(data.chat.messages || []);
+        const normalizedMessages = (data.chat.messages || []).map((m: any) => ({
+          id: m.id || crypto.randomUUID(),
+          role: m.role,
+          parts: m.parts || (m.content ? [{ type: 'text' as const, text: m.content }] : []),
+        }));
+        setMessages(normalizedMessages);
         setCurrentChatId(data.chat._id);
         setSidebarOpen(false);
       }
     } catch (e) { console.error('Load chat error:', e); }
   }
 
-  async function deleteChat(chatId: string) {
-    if (!confirm('Delete this chat?')) return;
+  async function confirmDelete(chatId: string) {
     try {
       await api(`/api/chat/${chatId}`, { method: 'DELETE' });
       setChatHistory((prev) => prev.filter((c) => c._id !== chatId));
@@ -152,6 +225,7 @@ export default function Page() {
         setMessages([]);
       }
     } catch (e) { console.error('Delete chat error:', e); }
+    setDeletingChatId(null);
   }
 
   function newChat() {
@@ -176,9 +250,6 @@ export default function Page() {
     }
   };
 
-  const handleDeleteMessage = (id: string) =>
-    setMessages(messages.filter((m) => m.id !== id));
-
   const handleSuggestedQuestion = (q: string) => {
     setInput(q);
     textareaRef.current?.focus();
@@ -186,6 +257,8 @@ export default function Page() {
 
   const isProcessing = status === 'submitted' || status === 'streaming';
   const isReady = status === 'ready';
+
+  const actionBtnStyle: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', padding: '4px 6px', borderRadius: 4, transition: 'all 0.15s', lineHeight: 1, fontFamily: 'sans-serif' };
 
   // ── Loading / unauthenticated ───────────────────────────────────────────────
   if (loading || !user) {
@@ -226,19 +299,42 @@ export default function Page() {
         </button>
         <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px' }}>
           {chatHistory.length === 0 ? (
-            <div style={{ padding: 20, textAlign: 'center', color: '#6b7280', fontSize: '0.78rem', fontFamily: 'sans-serif' }}>No chats yet.</div>
+            <div style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: '0.75rem', fontFamily: 'sans-serif', lineHeight: 1.6 }}>
+              <div style={{ fontSize: '1.4rem', marginBottom: 6 }}>💬</div>
+              No chats yet.<br />Start a conversation above.
+            </div>
           ) : (
-            chatHistory.map((chat) => (
-              <div key={chat._id} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                <button onClick={() => loadChat(chat._id)}
-                  style={{ flex: 1, textAlign: 'left', padding: '8px 10px', background: currentChatId === chat._id ? '#c9a84c22' : 'transparent', border: 'none', borderRadius: 6, color: '#f5f3ee', cursor: 'pointer', fontFamily: 'sans-serif' }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chat.title}</div>
-                  <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: 2 }}>{chat.updatedAt ? fmt2(new Date(chat.updatedAt)) : ''}</div>
-                </button>
-                <button onClick={() => deleteChat(chat._id)}
-                  style={{ padding: '6px 8px', background: 'rgba(220,38,38,0.15)', border: 'none', borderRadius: 5, color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', fontFamily: 'sans-serif', flexShrink: 0 }}>🗑️</button>
+            <>
+              <div style={{ padding: '4px 10px 8px', fontSize: '0.62rem', color: '#6b7280', fontFamily: 'sans-serif', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: '1px solid #c9a84c22' }}>
+                Recent Chats
               </div>
-            ))
+              {chatHistory.map((chat) => (
+                <div key={chat._id}>
+                  {deletingChatId === chat._id ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 10px', margin: '2px 0' }}>
+                      <span style={{ fontSize: '0.72rem', color: '#f5f3ee', fontFamily: 'sans-serif', flex: 1 }}>Delete this chat?</span>
+                      <button onClick={() => confirmDelete(chat._id)}
+                        style={{ padding: '4px 10px', background: '#dc2626', border: 'none', borderRadius: 4, color: '#fff', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'sans-serif', fontWeight: 600 }}>Yes</button>
+                      <button onClick={() => setDeletingChatId(null)}
+                        style={{ padding: '4px 10px', background: '#6b7280', border: 'none', borderRadius: 4, color: '#fff', fontSize: '0.65rem', cursor: 'pointer', fontFamily: 'sans-serif', fontWeight: 600 }}>No</button>
+                    </div>
+                  ) : (
+                    <div className="sidebar-chat-item" style={{ display: 'flex', alignItems: 'center', gap: 4, margin: '2px 0' }}>
+                      <button onClick={() => loadChat(chat._id)}
+                        style={{ flex: 1, textAlign: 'left', padding: '10px 10px', background: currentChatId === chat._id ? '#c9a84c22' : 'transparent', border: 'none', borderRadius: 8, color: '#f5f3ee', cursor: 'pointer', fontFamily: 'sans-serif', transition: 'background 0.15s' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {chat.title}
+                          {chat.faculty && <span style={{ display: 'inline-block', marginLeft: 6, padding: '1px 6px', borderRadius: 4, fontSize: '0.58rem', fontWeight: 700, fontFamily: 'sans-serif', letterSpacing: '0.02em', background: `${facultyColors[chat.faculty.toLowerCase()] || '#6b7280'}33`, color: facultyColors[chat.faculty.toLowerCase()] || '#6b7280', verticalAlign: 'middle' }}>{chat.faculty.toUpperCase()}</span>}
+                        </div>
+                        <div style={{ fontSize: '0.62rem', color: '#6b7280', marginTop: 3, fontFamily: 'sans-serif' }}>{relativeDate(chat.updatedAt)}</div>
+                      </button>
+                      <button onClick={() => setDeletingChatId(chat._id)}
+                        style={{ padding: '6px 8px', background: 'transparent', border: 'none', borderRadius: 5, color: '#6b7280', cursor: 'pointer', fontSize: '0.7rem', fontFamily: 'sans-serif', flexShrink: 0, transition: 'opacity 0.15s', opacity: 0.5 }} className="sidebar-delete-btn">🗑️</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
           )}
         </div>
       </div>
@@ -392,6 +488,18 @@ export default function Page() {
                         )}
                       </div>
                     );
+                    if (part.type === 'file') return (
+                      <div key={index} style={{ marginTop: 8 }}>
+                        {part.mediaType?.startsWith('image/') ? (
+                          <img src={part.url} alt={part.filename || 'Uploaded image'} onClick={() => setLightboxUrl(part.url)} style={{ width: 140, height: 140, borderRadius: 8, objectFit: 'cover', border: '1px solid #e2ddd6', cursor: 'pointer' }} />
+                        ) : (
+                          <a href={part.url} target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: '0.75rem', color: '#1a4731', fontFamily: 'sans-serif', display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f0ede8', padding: '3px 8px', borderRadius: 4, textDecoration: 'none', border: '1px solid #c9a84c44' }}>
+                            📎 {part.filename || 'Download file'}
+                          </a>
+                        )}
+                      </div>
+                    );
                     if (part.type === 'source-url') return (
                       <div key={index} style={{ marginTop: 8 }}>
                         <a href={part.url} target="_blank" rel="noopener noreferrer"
@@ -405,8 +513,11 @@ export default function Page() {
                 </div>
 
                 {message.role === 'assistant' && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                    <button onClick={() => handleDeleteMessage(message.id)} style={{ fontSize: '0.7rem', opacity: 0.35, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }} aria-label="Delete message">🗑️</button>
+                  <div className="message-actions" style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 8, opacity: 0.4, transition: 'opacity 0.15s' }}>
+                    <button onClick={() => copyMessage(message.id)} title="Copy" style={{ ...actionBtnStyle, color: copiedMessages.has(message.id) ? '#059669' : 'inherit' }}>{copiedMessages.has(message.id) ? '✓' : '📋'}</button>
+                    <button onClick={() => toggleLike(message.id)} title="Good response" style={{ ...actionBtnStyle, color: '#059669', background: likedMessages.has(message.id) ? '#05966922' : 'transparent' }}>👍</button>
+                    <button onClick={() => toggleDislike(message.id)} title="Bad response" style={{ ...actionBtnStyle, color: '#dc2626', background: dislikedMessages.has(message.id) ? '#dc262622' : 'transparent' }}>👎</button>
+                    <button onClick={() => shareMessage(message.id)} title="Share" style={actionBtnStyle}>📤</button>
                   </div>
                 )}
               </div>
@@ -518,16 +629,36 @@ export default function Page() {
 
       </div>{/* end flex-1 main */}
 
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div onClick={() => setLightboxUrl(null)} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <img src={lightboxUrl} alt="Enlarged" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 12, objectFit: 'contain', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }} />
+          <span style={{ position: 'absolute', top: 20, right: 24, color: '#fff', fontSize: '2rem', cursor: 'pointer', fontWeight: 300, lineHeight: 1 }}>×</span>
+        </div>
+      )}
+
       <style>{`
         @keyframes bounce {
           0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
           40% { transform: translateY(-6px); opacity: 1; }
         }
+        .sidebar-chat-item button:first-child:hover { background: #c9a84c11 !important; }
+        .sidebar-chat-item:hover .sidebar-delete-btn { opacity: 1 !important; }
+        .message-actions:hover { opacity: 1 !important; }
+        .message-actions button:hover { background: #f0ede8 !important; }
       `}</style>
     </div>
   );
 }
 
-function fmt2(d: Date) {
-  return d.toLocaleDateString('en-BD', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+function relativeDate(dateStr: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString('en-BD', { day: 'numeric', month: 'short', year: 'numeric' });
 }
