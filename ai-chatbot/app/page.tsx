@@ -11,6 +11,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { motion } from 'motion/react';
+import { Copy, ThumbsUp, ThumbsDown, Share2, Check } from 'lucide-react';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
 
@@ -434,9 +436,11 @@ export default function Page() {
           )}
 
           {/* Messages */}
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-
+          {messages.map((message, i) => (
+            <div
+              key={message.id}
+              className={`flex fade-in ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
               {/* Assistant avatar */}
               {message.role === 'assistant' && (
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1a4731', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4, border: '1.5px solid #c9a84c', fontSize: 16 }}>
@@ -512,12 +516,28 @@ export default function Page() {
                   })}
                 </div>
 
-                {message.role === 'assistant' && (
+                {message.role === 'assistant' && !(status === 'streaming' && message === messages[messages.length - 1]) && (
                   <div className="message-actions" style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 8, opacity: 0.4, transition: 'opacity 0.15s' }}>
-                    <button onClick={() => copyMessage(message.id)} title="Copy" style={{ ...actionBtnStyle, color: copiedMessages.has(message.id) ? '#059669' : 'inherit' }}>{copiedMessages.has(message.id) ? '✓' : '📋'}</button>
-                    <button onClick={() => toggleLike(message.id)} title="Good response" style={{ ...actionBtnStyle, color: '#059669', background: likedMessages.has(message.id) ? '#05966922' : 'transparent' }}>👍</button>
-                    <button onClick={() => toggleDislike(message.id)} title="Bad response" style={{ ...actionBtnStyle, color: '#dc2626', background: dislikedMessages.has(message.id) ? '#dc262622' : 'transparent' }}>👎</button>
-                    <button onClick={() => shareMessage(message.id)} title="Share" style={actionBtnStyle}>📤</button>
+                    <button onClick={() => copyMessage(message.id)} title="Copy" style={actionBtnStyle}>
+                      {copiedMessages.has(message.id) ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                    <button onClick={() => toggleLike(message.id)} title="Good response" style={actionBtnStyle}>
+                      <ThumbsUp size={14} fill={likedMessages.has(message.id) ? 'currentColor' : 'none'} />
+                    </button>
+                    <button onClick={() => toggleDislike(message.id)} title="Bad response" style={actionBtnStyle}>
+                      <ThumbsDown size={14} fill={dislikedMessages.has(message.id) ? 'currentColor' : 'none'} />
+                    </button>
+                    <button onClick={() => shareMessage(message.id)} title="Share" style={actionBtnStyle}>
+                      <Share2 size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {status === 'streaming' && message === messages[messages.length - 1] && message.role === 'assistant' && (
+                  <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 8 }}>
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#1a4731', animation: 'bounce 1.2s infinite', animationDelay: `${i * 0.2}s` }} />
+                    ))}
                   </div>
                 )}
               </div>
@@ -537,7 +557,7 @@ export default function Page() {
 
           {/* Typing indicator */}
           {status === 'submitted' && (
-            <div className="flex justify-start items-center gap-3">
+            <div className="flex justify-start items-center gap-3 fade-in">
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1a4731', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid #c9a84c', fontSize: 16 }}>🎓</div>
               <div style={{ background: '#fff', border: '1px solid #e2ddd6', borderRadius: '18px 18px 18px 4px', padding: '14px 18px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -641,6 +661,13 @@ export default function Page() {
         @keyframes bounce {
           0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
           40% { transform: translateY(-6px); opacity: 1; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .fade-in {
+          animation: fadeIn 0.25s ease-out;
         }
         .sidebar-chat-item button:first-child:hover { background: #c9a84c11 !important; }
         .sidebar-chat-item:hover .sidebar-delete-btn { opacity: 1 !important; }

@@ -334,7 +334,6 @@ PAST LEADERS:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SHUTTLE TRAIN (CHATTRAGRAM BISHWABIDYALAY SHATUL):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Introduced: 1979 (first journey 1980)
 - Two trains with 10 compartments each
 - Daily ridership: 9,000-10,000 students
@@ -343,7 +342,6 @@ SHUTTLE TRAIN (CHATTRAGRAM BISHWABIDYALAY SHATUL):
 - CU Railway Station: Only university railway station in Bangladesh (single platform)
 
 UP SCHEDULE (Chittagong City to Campus):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - 7:15 AM
 - 7:40 AM
 - 9:30 AM (from Soloshohor)
@@ -360,7 +358,6 @@ HOLIDAY UP SCHEDULE:
 - 8:30 PM
 
 DOWN SCHEDULE (Campus to Chittagong City):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - 8:40 AM (up to Soloshohor)
 - 9:05 AM (up to Soloshohor)
 - 10:30 AM (up to Soloshohor)
