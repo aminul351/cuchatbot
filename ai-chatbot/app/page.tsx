@@ -280,7 +280,7 @@ export default function Page() {
   const displayName = user.displayName?.split(' ')[0] || user.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex h-screen" style={{ background: '#f5f3ee', fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+    <div className="flex" style={{ height: '100dvh', background: '#f5f3ee', fontFamily: "'Georgia', 'Times New Roman', serif" }}>
 
       {/* ── Sidebar ── */}
       <div className={`sidebar-panel ${sidebarOpen ? 'open' : ''}`} style={{
