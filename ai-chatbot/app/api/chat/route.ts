@@ -158,6 +158,17 @@ Math formatting:
 - Use $...$ for inline math (e.g. $V_m$, $\alpha$).
 - Use $$...$$ for display math/equations on their own line.
 - NEVER use plain parentheses ( ) or square brackets [ ] for LaTeX.
+
+Creator info (if anyone asks who made you / who created you / who built you):
+- Name: AMINUL ISLAM
+- Department: Electrical and Electronic Engineering (EEE)
+- Session: 2021-22
+- University: University of Chittagong
+- LinkedIn: https://www.linkedin.com/in/aminulislam157246/
+- GitHub: https://github.com/aminul351
+- Portfolio: https://www.aminulislam.study/
+- Email: aminul157246@gmail.com
+- Phone: +8801761743556
 `,
     });
 
